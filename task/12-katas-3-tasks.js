@@ -183,11 +183,32 @@ function UrlShortener() {
 UrlShortener.prototype = {
 
     encode: function(url) {
-        throw new Error('Not implemented');
+        const shift = 7;
+        let utf8CharCode = 0;
+        let short = "";
+        for (let i = 0; i < url.length; i++) {
+            utf8CharCode = (utf8CharCode << shift) | (this.urlAllowedChars.indexOf(url[i]) + 1);
+            if ((i + 1) % 2 == 0 || i == url.length - 1) {
+                short += String.fromCharCode(utf8CharCode);
+                utf8CharCode = 0;
+            } 
+        }
+        return short;
     },
     
     decode: function(code) {
-        throw new Error('Not implemented');
+        const shift = 7;
+        let utf8CharCode = 0;
+        let url = "";
+        for (let i = 0; i < code.length; i++) {
+            utf8CharCode = code.charCodeAt(i);
+            let ind = utf8CharCode >> shift & 0b1111111;
+            if (ind != 0) {
+                url += this.urlAllowedChars[ind - 1];
+            }
+            url += this.urlAllowedChars[(utf8CharCode & 0b1111111) - 1];
+        }
+        return url;
     } 
 }
 
