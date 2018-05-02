@@ -103,7 +103,9 @@ function* getPermutations(chars) {
         while (j >= 0 && arr[j] < arr[i]){
             j--;
         }
-        [arr[i], arr[j]] = [arr[j], arr[i]];
+        let temp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp;
         for (let j = i + 1, k = arr.length - 1; j < k; j++, k--){
             [arr[j], arr[k]] = [arr[k], arr[j]];
         }
@@ -179,13 +181,6 @@ function UrlShortener() {
 UrlShortener.prototype = {
 
     encode: function(url) {
-        let rotationArr = [url];
-        for (let i = 1; i < url.length; i++){
-            let subsrt = url.slice(0, i);
-            rotationArr.push(url.slice(i).concat(subsrt));
-        }
-        rotationArr.sort((a, b) => this.urlAllowedChars.indexOf(a[0]) - this.urlAllowedChars.indexOf(b[0]));
-        let endStr = rotationArr.reduce((prev, curr) => prev + curr[curr.length - 1], "");
         throw new Error('Not implemented');
     },
     
