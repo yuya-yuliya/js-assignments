@@ -28,7 +28,53 @@
  *   'NULL'      => false 
  */
 function findStringInSnakingPuzzle(puzzle, searchStr) {
-    throw new Error('Not implemented');
+    function findInNear(ind, puzzle, subStr){
+        if (subStr == 0){
+            return true;
+        }
+        let puzzleWordLen = puzzle[0].length, puzzleLen = puzzle.length * puzzle[0].length;
+        let nextInd = 0;
+        for (let i = 0; i < 4; i++){
+            switch (i){
+                case 0:
+                    if (ind % puzzleWordLen < puzzleWordLen - 1){
+                        nextInd = ind + 1;
+                    }
+                    else {
+                        continue;
+                    }
+                    break;
+                case 1:
+                    nextInd = ind + puzzleWordLen;
+                    break;
+                case 2:
+                    if (ind % puzzleWordLen > 0){
+                        nextInd = ind - 1;
+                    }
+                    else{
+                        continue;
+                    }
+                    break;
+                case 3:
+                    nextInd = ind - puzzleWordLen;
+                    break;
+            }
+            if (nextInd < puzzleLen && nextInd > 0  && puzzle[Math.floor(nextInd / puzzleWordLen)][nextInd % puzzleWordLen] == subStr[0]){
+                if (findInNear(nextInd, puzzle, subStr.slice(1))){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    let wasFound = false, puzzleLen = puzzle.length * puzzle[0].length, puzzleWordLen = puzzle[0].length;
+    for (let ind = 0; ind < puzzleLen && !wasFound; ind++){
+        if (puzzle[Math.floor(ind / puzzleWordLen)][ind % puzzleWordLen] == searchStr[0]){
+            wasFound = findInNear(ind, puzzle, searchStr.slice(1));
+        }
+    }
+    return wasFound;
 }
 
 
@@ -45,7 +91,30 @@ function findStringInSnakingPuzzle(puzzle, searchStr) {
  *    'abc' => 'abc','acb','bac','bca','cab','cba'
  */
 function* getPermutations(chars) {
-    throw new Error('Not implemented');
+    function next(arr){
+        let i = arr.length - 2;
+        while (i >= 0 && arr[i] > arr[i + 1]){
+            i--;
+        }
+        if (i == -1){
+            return false;
+        }
+        let j = arr.length - 1;
+        while (j >= 0 && arr[j] < arr[i]){
+            j--;
+        }
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+        for (let j = i + 1, k = arr.length - 1; j < k; j++, k--){
+            [arr[j], arr[k]] = [arr[k], arr[j]];
+        }
+        return true;
+    }
+
+    yield chars;
+    let arr = chars.split("");
+    while (next(arr)){
+        yield arr.join("");
+    }
 }
 
 
@@ -65,7 +134,25 @@ function* getPermutations(chars) {
  *    [ 1, 6, 5, 10, 8, 7 ] => 18  (купить по 1,6,5 и затем продать все по 10)
  */
 function getMostProfitFromStockQuotes(quotes) {
-    throw new Error('Not implemented');
+    let profit = 0;
+    while (quotes.length > 0){
+        let deltaArr = new Array(quotes.length);
+        for (let i = 0; i < quotes.length; i++){
+            deltaArr[i] = quotes[i] - quotes[0];
+        }
+        let maxDeltaInd = 0;
+        for (let i = 1; i < deltaArr.length; i++){
+            if (deltaArr[i] >= deltaArr[maxDeltaInd]){
+                maxDeltaInd = i;
+            }
+        }
+        for (let i = 0; i < maxDeltaInd; i++){
+            profit -= quotes[i];
+        }
+        profit += quotes[maxDeltaInd] * maxDeltaInd;
+        quotes = quotes.slice(maxDeltaInd + 1);
+    }
+    return profit;
 }
 
 
@@ -92,6 +179,13 @@ function UrlShortener() {
 UrlShortener.prototype = {
 
     encode: function(url) {
+        let rotationArr = [url];
+        for (let i = 1; i < url.length; i++){
+            let subsrt = url.slice(0, i);
+            rotationArr.push(url.slice(i).concat(subsrt));
+        }
+        rotationArr.sort((a, b) => this.urlAllowedChars.indexOf(a[0]) - this.urlAllowedChars.indexOf(b[0]));
+        let endStr = rotationArr.reduce((prev, curr) => prev + curr[curr.length - 1], "");
         throw new Error('Not implemented');
     },
     

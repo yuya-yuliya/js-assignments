@@ -34,7 +34,50 @@
  *
  */
 function parseBankAccount(bankAccount) {
-    throw new Error('Not implemented');
+    let digits = [
+        " _ "+
+        "| |"+
+        "|_|",
+        "   "+
+        "  |"+
+        "  |",
+        " _ "+
+        " _|"+
+        "|_ ",
+        " _ "+
+        " _|"+
+        " _|",
+        "   "+
+        "|_|"+
+        "  |",
+        " _ "+
+        "|_ "+
+        " _|",
+        " _ "+
+        "|_ "+
+        "|_|",
+        " _ "+
+        "  |"+
+        "  |",
+        " _ "+
+        "|_|"+
+        "|_|",
+        " _ "+
+        "|_|"+
+        " _|"
+    ];
+    let number = 0;
+    let oneStrLength = bankAccount.length / 3;
+    for (let i = 0; i + 3 < bankAccount.length / 3; i += 3){
+        let digitStr = "";
+        for (let j = 0; j < 3; j++){
+           digitStr += bankAccount.substr(i + oneStrLength * j, 3) 
+        }
+        let digit = 0;
+        digit = digits.indexOf(digitStr);
+        number = number * 10 + digit;
+    }
+    return number;
 }
 
 
@@ -63,7 +106,21 @@ function parseBankAccount(bankAccount) {
  *                                                                                                'characters.'
  */
 function* wrapText(text, columns) {
-    throw new Error('Not implemented');
+    let strArr = text.split(" "), col = columns, ind = 0;
+    while (ind < strArr.length){
+        let newStr = "";
+        while (ind < strArr.length && newStr.length + strArr[ind].length < columns){
+            if (newStr.length == 0){
+                newStr += strArr[ind];
+            }
+            else {
+                newStr += " " + strArr[ind];
+            }
+            ind++; 
+        }
+        yield newStr;
+    }
+    
 }
 
 
@@ -101,6 +158,89 @@ const PokerRank = {
 }
 
 function getPokerHandRank(hand) {
+    function isRange(valueArr, num){
+        let arr = valueArr.slice(0);
+        arr.sort((a, b) => a - b);
+        if (arr[0] == 0){
+            if (arr[1] != 1){
+                if (arr[arr.length - 1] == num - 1){
+                    arr[0] = num;
+                    arr.sort((a, b) => a - b);
+                }
+                else {
+                    return false;
+                }
+            }
+        }
+        for (let i = 0; i < arr.length - 1; i++){
+            if (arr[i + 1] - arr[i] != 1){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function isSameSuits(suitsArr){
+        let suit = suitsArr[0];
+        for (let i = 1; i < suitsArr.length; i++){
+            if (suitsArr[i] != suit){
+                return false;
+            }
+        }
+        return true;
+    }
+    function countSetsSameValues(valueArr, setLen){
+        let count = 0, arr = valueArr.slice(0);
+        while (arr.length > 0){
+            let value = arr[0], countVal = 0;
+            while (arr.indexOf(value) != -1){
+                countVal++;
+                arr.splice(arr.indexOf(value), 1);
+            }
+            if (countVal == setLen){
+                count++;
+            }
+        }
+        return count;
+    }
+    let suits = "♣♦♥♠";
+    let values = "A234567891JQK";
+    let handValues = [];
+    let handSuits = [];
+    hand.forEach((value) => {
+        handSuits.push(value[value.length - 1]);
+        handValues.push(values.indexOf(value[0]));
+    });
+
+    if (countSetsSameValues(handValues, 4) == 1){
+        return PokerRank.FourOfKind;
+    }
+    if (countSetsSameValues(handValues, 3) > 0){
+        if (countSetsSameValues(handValues, 2) == 1){
+            return PokerRank.FullHouse;
+        }
+        else {
+            return PokerRank.ThreeOfKind;
+        }
+    }
+    switch (countSetsSameValues(handValues, 2)){
+        case 1:
+            return PokerRank.OnePair;
+        case 2:
+            return PokerRank.TwoPairs;
+    }
+    if (isSameSuits(handSuits)){
+        if (isRange(handValues, values.length)){
+            return PokerRank.StraightFlush;
+        }
+        else {
+            return PokerRank.Flush;
+        }
+    }
+    if (isRange(handValues, values.length)){
+        return PokerRank.Straight;
+    }
+    return PokerRank.HighCard;
     throw new Error('Not implemented');
 }
 
@@ -136,7 +276,61 @@ function getPokerHandRank(hand) {
  *    '+-------------+\n'
  */
 function* getFigureRectangles(figure) {
-   throw new Error('Not implemented');
+   let leftBorder = -1, rightBorder = -1;
+   let rectStr = "";
+   let rowLength = figure.indexOf("\n") + 1;
+   let i = 0;
+   while (i < figure.length){
+       if (leftBorder == -1){
+            if (i + rowLength < figure.length && figure[i] == "+" && ((figure[i + 1] == "-" && figure[i + rowLength] == "|") || (figure[i + 1] == "+" && figure[i + rowLength] == "+"))){
+                rectStr += figure[i];
+                leftBorder = i;
+            }
+            i++;
+        }
+        else {
+            if (rightBorder == -1){
+                if (i + rowLength < figure.length && i - 1 >= 0 && figure[i] == "+" && ((figure[i - 1] == "-" && figure[i + rowLength] == "|") || (figure[i - 1] == "+" && figure[i + rowLength] == "+"))){
+                    rectStr += figure[i];
+                    rightBorder = i;
+                    i += rowLength - (rightBorder - leftBorder);
+                    rectStr += "\n";
+                }
+                else {
+                    if (figure[i] == "+"){
+                        rectStr += "-";
+                    }
+                    else {
+                        rectStr += figure[i];
+                    }
+                    i++;
+                }
+            }
+            else if (i % rowLength == rightBorder % rowLength){
+                rectStr += figure[i];
+                if (i - rowLength >= 0 && i - 1 >= 0 && figure[i] == "+" && ((figure[i - 1] == "-" && figure[i - rowLength] == "|") || (figure[i - 1] == "+" && figure[i - rowLength] == "+"))){
+                    i = rightBorder;
+                    leftBorder = -1;
+                    rightBorder = -1;
+                    yield rectStr + "\n";
+                    rectStr = "";
+                }
+                else {
+                    i += rowLength - (rightBorder - leftBorder);
+                    rectStr += "\n"; 
+                }
+            }
+            else {
+                if (figure[i] == "+" && i % rowLength != leftBorder % rowLength){
+                    rectStr += "-";
+                }
+                else {
+                    rectStr += figure[i];
+                }
+                i++;
+            }
+        }
+   }
 }
 
 

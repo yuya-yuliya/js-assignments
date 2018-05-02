@@ -17,8 +17,35 @@
  *  ]
  */
 function createCompassPoints() {
-    throw new Error('Not implemented');
+    //ОПТИМИЗИРОВАТЬ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    let delta = 11.25, count = 0;
+    function CompassPoint(abbr)
+    {
+        return {abbreviation: abbr, azimuth: delta * count++};
+    }
     var sides = ['N','E','S','W'];  // use array of cardinal directions only!
+    let arr = [];
+    for (let i = 0; i < sides.length; i++){
+        let side1 = sides[i], side2 = sides[(i + 1) % sides.length];
+        arr.push(CompassPoint(side1));
+        arr.push(CompassPoint(side1 + 'b' + side2));
+        if (i % 2 == 0){
+            arr.push(CompassPoint(side1 + side1 + side2));
+            arr.push(CompassPoint(side1 + side2 + 'b' + side1));
+            arr.push(CompassPoint(side1 + side2));
+            arr.push(CompassPoint(side1 + side2 + 'b' + side2));
+            arr.push(CompassPoint(side2 + side1 + side2));
+        }
+        else {
+            arr.push(CompassPoint(side1 + side2 + side1));
+            arr.push(CompassPoint(side2 + side1 + 'b' + side1));
+            arr.push(CompassPoint(side2 + side1));
+            arr.push(CompassPoint(side2 + side1 + 'b' + side2));
+            arr.push(CompassPoint(side2 + side2 + side1));
+        }
+        arr.push(CompassPoint(side2 + 'b' + side1));
+    }
+    return arr;
 }
 
 
@@ -56,7 +83,21 @@ function createCompassPoints() {
  *   'nothing to do' => 'nothing to do'
  */
 function* expandBraces(str) {
-    throw new Error('Not implemented');
+    let stack = [], wasPrinted = [];
+    let regExpr = /\{([^{}]+)\}/;
+    stack.push(str);
+    while (stack.length > 0){
+        let curr = stack.pop();
+        let match = curr.match(regExpr);
+        if (match){
+            let subStr = match[1].split(",");
+            subStr.forEach((value) => {stack.push(curr.replace(match[0], value));});
+        }
+        else if (wasPrinted.indexOf(curr) == -1) {
+            wasPrinted.push(curr);
+            yield curr;
+        }
+    }
 }
 
 
@@ -89,7 +130,22 @@ function* expandBraces(str) {
  *
  */
 function getZigZagMatrix(n) {
-    throw new Error('Not implemented');
+    //throw new Error('Not implemented');
+    let arr = new Array(n).fill(0).map(value => new Array(n).fill(0));
+    let currValue = 0;
+    for (let i = 0; i <= (n - 1) * 2; i++){
+        let j = i < n ? i : (n - 1);
+        let k = i < n ? 0 : (i - j);
+        for (j, k; j >= 0 && k < n; j--, k++){
+            if (i % 2 == 0){
+                arr[j][k] = currValue++;
+            }
+            else {
+                arr[k][j] = currValue++;
+            }
+        }
+    }
+    return arr;
 }
 
 
@@ -114,7 +170,30 @@ function getZigZagMatrix(n) {
  *
  */
 function canDominoesMakeRow(dominoes) {
-    throw new Error('Not implemented');
+    let count = new Array(7).fill(0);
+    dominoes.forEach(element => {
+        if (element[0] == element[1]){
+            if (count[element[0]] != 0){
+                count[element[0]] += 2;
+            }
+            else {
+                count[element[0]] += 0.5;
+            }
+        }
+        else {
+            for (let i = 0; i < 2; i++){
+                if (count[element[i]] % 1 != 0){
+                    count[element[i]] += 0.5;
+                }
+                else {
+                    count[element[i]]++;
+                }
+            }
+        }
+    });
+    let countOnes = count.reduce((prev, curr) => prev + curr % 2, 0);
+    return (countOnes % 2 != 0 || countOnes > 2) ? false : true;
+
 }
 
 
@@ -138,7 +217,65 @@ function canDominoesMakeRow(dominoes) {
  * [ 1, 2, 4, 5]          => '1,2,4,5'
  */
 function extractRanges(nums) {
-    throw new Error('Not implemented');
+    function print(str, range, value){
+        if (str.length != 0){
+            str += ",";
+        }
+        switch (range.isRange){
+            case 0:
+                str += range.startRange;
+                break;
+            case 0.5:
+                str += range.startRange + "," + range.endRange;
+                break;
+            case 1:
+                str += range.startRange + "-" + range.endRange;
+                break;
+        }
+        range.isRange = 0;
+        range.endRange = undefined;
+        range.startRange = value;
+        return str;
+    }
+    let Range = {
+        isRange: 0, 
+        startRange: undefined, 
+        endRange: undefined
+    };
+    let str = "";
+    nums.forEach((element) => {
+        if (Range.isRange == 0){
+            if (Range.startRange == undefined){
+                Range.startRange = element;
+            }
+            else if (element - Range.startRange == 1){
+                Range.endRange = element;
+                Range.isRange = 0.5;
+            }
+            else {
+                str = print(str, Range, element);
+            }
+        }
+        else if (Range.isRange == 0.5){
+            if (element - Range.endRange == 1){
+                Range.isRange = 1;
+                Range.endRange = element;
+            }
+            else {
+                str = print(str, Range, element);
+            }
+        }
+        else {
+            if (element - Range.endRange == 1){
+                Range.endRange = element;
+            }
+            else {
+                str = print(str, Range, element);
+            }
+        }
+    });
+    str = print(str, Range, 0);
+    return str;
 }
 
 module.exports = {
