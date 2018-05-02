@@ -107,7 +107,9 @@ function* getPermutations(chars) {
         arr[i] = arr[j];
         arr[j] = temp;
         for (let j = i + 1, k = arr.length - 1; j < k; j++, k--){
-            [arr[j], arr[k]] = [arr[k], arr[j]];
+            temp = arr[j];
+            arr[j] = arr[k];
+            arr[k] = temp;
         }
         return true;
     }
