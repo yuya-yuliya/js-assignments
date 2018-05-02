@@ -24,7 +24,11 @@
  *    console.log(r.getArea());   // => 200
  */
 function Rectangle(width, height) {
-    throw new Error('Not implemented');
+    this.width = width;
+    this.height = height;
+    Rectangle.prototype.getArea = function () {
+        return this.width * this.height;
+    }
 }
 
 
@@ -39,7 +43,7 @@ function Rectangle(width, height) {
  *    { width: 10, height : 20 } => '{"height":10,"width":20}'
  */
 function getJSON(obj) {
-    throw new Error('Not implemented');
+    return JSON.stringify(obj);
 }
 
 
@@ -55,7 +59,7 @@ function getJSON(obj) {
  *
  */
 function fromJSON(proto, json) {
-    throw new Error('Not implemented');
+    return Object.setPrototypeOf(JSON.parse(json), proto);
 }
 
 
@@ -109,34 +113,153 @@ function fromJSON(proto, json) {
  *  Если нужно больше примеров - можете посмотреть юнит тесты.
  */
 
+class cssSelector {
+    constructor(){
+        this.selector = new Array(6);
+        this.errorMsg = ["Element, id and pseudo-element should not occur more then one time inside the selector",
+                    "Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element"];
+        this.conbineStr = "";
+    }
+
+    check(ind) {
+        for (let i = ind + 1; i < this.selector.length; i++){
+            if (this.selector[i] != undefined){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    setSingleValue(value, ind){
+        if (this.check(ind)){
+            if (this.selector[ind] == undefined){
+                this.selector[ind] = value;
+            }
+            else {
+                throw new Error(this.errorMsg[0]);
+            }
+        }
+        else {
+            throw new Error(this.errorMsg[1]);
+        }
+    }
+
+    setArrayValue(value, ind){
+        if (this.check(ind)){
+            if (this.selector[ind] == undefined){
+                this.selector[ind] = [value];
+            }
+            else {
+                this.selector[ind].push(value);
+            }
+        }
+        else {
+            throw new Error(this.errorMsg[1]);
+        }
+    }
+
+    element(value){
+        this.setSingleValue(value, 0);
+        return this;
+    }
+
+    id(value){
+        this.setSingleValue(value, 1);
+        return this;
+    }
+
+    class(value){
+        this.setArrayValue(value, 2);
+        return this;
+    }
+
+    attr(value){
+        this.setArrayValue(value, 3);
+        return this;
+    }
+
+    pseudoClass(value){
+        this.setArrayValue(value, 4);
+        return this;
+    }
+
+    pseudoElement(value){
+        this.setSingleValue(value, 5);
+        return this;
+    }
+
+    stringify(){
+        if (this.conbineStr == ""){
+            return this.toString();
+        }
+        else {
+            return this.conbineStr;
+        }
+    }
+
+    toString(){
+        let separators = [ "#",".","[","]",":","::"];
+        let str = "";
+        for (let i = 0; i < this.selector.length; i++){
+            if (this.selector[i] != undefined){
+                let sepInd = i;
+                switch (i){
+                    case 0:
+                        str += this.selector[i];
+                        break;
+                    case 1:
+                        sepInd = i - 1;
+                    case 5:
+                        str += separators[sepInd] + this.selector[i];
+                        break;
+                    case 2:
+                        sepInd = i - 1;
+                    case 4:
+                        this.selector[i].forEach((value) => {str += separators[sepInd] + value});
+                        break;
+                    case 3:
+                        this.selector[i].forEach((value) => {str += separators[2] + value + separators[3]});
+                        break;
+                }
+            }
+        }
+        return str;
+    }
+
+    static combine(selector1, combinator, selector2){
+        selector1.conbineStr = selector1.stringify() + " " + combinator + " " + selector2.stringify();
+        return selector1;
+    }
+}
+
 const cssSelectorBuilder = {
 
     element: function(value) {
-        throw new Error('Not implemented');
+        return (new cssSelector).element(value);
     },
 
     id: function(value) {
-        throw new Error('Not implemented');
+        return (new cssSelector).id(value);
     },
 
     class: function(value) {
-        throw new Error('Not implemented');
+        return (new cssSelector).class(value);
     },
 
     attr: function(value) {
-        throw new Error('Not implemented');
+        return (new cssSelector).attr(value);
     },
 
     pseudoClass: function(value) {
-        throw new Error('Not implemented');
+        return (new cssSelector).pseudoClass(value);
     },
 
     pseudoElement: function(value) {
-        throw new Error('Not implemented');
+        return (new cssSelector).pseudoElement(value);
     },
 
     combine: function(selector1, combinator, selector2) {
-        throw new Error('Not implemented');
+        return cssSelector.combine(selector1, combinator, selector2);
     },
 };
 
