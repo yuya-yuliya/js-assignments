@@ -17,7 +17,6 @@
  *  ]
  */
 function createCompassPoints() {
-    //ОПТИМИЗИРОВАТЬ!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     let delta = 11.25, count = 0;
     function CompassPoint(abbr)
     {
